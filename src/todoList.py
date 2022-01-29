@@ -10,12 +10,12 @@ from botocore.exceptions import ClientError
 def get_table(dynamodb=None):
     if not dynamodb:
         URL = os.environ['ENDPOINT_OVERRIDE']
-        if URL:
+        if URL: # pragma: no cover
             print('URL dynamoDB:'+URL)
             boto3.client = functools.partial(boto3.client, endpoint_url=URL)
             boto3.resource = functools.partial(boto3.resource,
                                                endpoint_url=URL)
-        dynamodb = boto3.resource("dynamodb")
+        dynamodb = boto3.resource("dynamodb", region_name='us-east-1')
     # fetch todo from the database
     table = dynamodb.Table(os.environ['DYNAMODB_TABLE'])
     return table
@@ -143,6 +143,6 @@ def create_todo_table(dynamodb):
     # Wait until the table exists.
     table.meta.client.get_waiter('table_exists').wait(TableName=tableName)
     if (table.table_status != 'ACTIVE'):
-        raise AssertionError()
+        raise AssertionError() # pragma: no cover
 
     return table

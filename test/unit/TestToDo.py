@@ -200,6 +200,32 @@ class TestDatabaseFunctions(unittest.TestCase):
         self.assertRaises(TypeError, delete_item("", self.dynamodb))
         print ('End: test_delete_todo_error')
 
+    def test_get_todo_error(self):
+        #En este caso, busco un id no valido.
+        print ('---------------------')
+        print ('Start: test_get_todo_error')
+        dynamodb = boto3.resource('dynamodb', region_name='us-west-1')
+        from src.todoList import get_item
+        self.assertRaises(TypeError, get_item(None,dynamodb))
+        print ('End: test_get_todo_error')
+
+    def test_get_table_none(self):
+        '''
+            Caso agregado, es para ingresar en todoList.py en get_table cuando no se pasa
+            la db. En este caso no utilizo el mock.
+            Se agrega os.environ["ENDPOINT_OVERRIDE"] = '' para que no ingrese a la 
+            coneccion via URL
+        '''
+        print ('---------------------')
+        print ('Start: test_get_table_none')
+        os.environ["ENDPOINT_OVERRIDE"] = ''
+        from src.todoList import get_table
+        table = get_table()
+        print('Table name:' + str(table))
+        self.assertIsNotNone(table)
+        del os.environ['ENDPOINT_OVERRIDE']
+        print ('End: test_get_table_none')
+
 
 
 if __name__ == '__main__':
