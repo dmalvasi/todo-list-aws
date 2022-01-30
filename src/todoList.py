@@ -15,7 +15,7 @@ def get_table(dynamodb=None):
     if not dynamodb:
         URL = os.environ['ENDPOINT_OVERRIDE']
         if URL:  # pragma: no cover
-            print('URL dynamoDB:'+URL) 
+            print('URL dynamoDB:'+URL)
             boto3.client = functools.partial(boto3.client, endpoint_url=URL)
             boto3.resource = functools.partial(boto3.resource,
                                                endpoint_url=URL)
@@ -152,25 +152,28 @@ def create_todo_table(dynamodb):
     return table
 
 
-#------------------ TRASLATE INICIO --------------------
-#Obtiene el servicio de comprehend
+# ------------------ TRASLATE INICIO --------------------
+# Obtiene el servicio de comprehend
 def get_comprehend(comprehend=None):
     if not comprehend:
-        comprehend = boto3.client(service_name='comprehend',endpoint_url='https://comprehend.us-east-1.amazonaws.com/')
+        comprehend = boto3.client(service_name='comprehend',
+                                    endpoint_url='https://comprehend.us-east-1.amazonaws.com/')
     logger.debug("Obteniendo comprehend")
     logger.debug(comprehend)
     return comprehend
 
-#Obtiene el servicio de traslate
+
+# Obtiene el servicio de traslate
 def get_translate(translate=None):
     if not translate:
-        translate = boto3.client(service_name='translate',endpoint_url='https://translate.us-east-1.amazonaws.com/')
+        translate = boto3.client(service_name='translate',
+                                    endpoint_url='https://translate.us-east-1.amazonaws.com/')
     logger.debug("Obteniendo translate")
     logger.debug(translate)
     return translate
 
 
-#Detecta el lenguaje original del texto.
+# Detecta el lenguaje original del texto.
 def get_item_languaje(text, comprehend=None):
     comprehend = get_comprehend(comprehend)
     logger.info(comprehend)
@@ -196,7 +199,7 @@ def get_item_languaje(text, comprehend=None):
         return str(thelangcode)
 
 
-#Realiza el traslate del texto.
+# Realiza el traslate del texto.
 def translate_text(text, s_lang, t_lang, translate=None):
     logging.info('get translateclient --------------------')
     translate = get_translate(translate)
@@ -214,7 +217,6 @@ def translate_text(text, s_lang, t_lang, translate=None):
                 SourceLanguageCode=s_lang,
                 TargetLanguageCode=t_lang
         )
-        
     except ClientError as e:
         logger.exception("No fue posible realizar la traduccion")
         print(e.response['Error']['Message'])
@@ -231,14 +233,14 @@ def translate_item(key, language, dynamodb=None):
     logging.info('inicio translate (translate_item) --------------------')
     try:
         logging.debug('Llamo funcion get_item --------------------')
-        item = get_item(key,dynamodb)
+        item = get_item(key, dynamodb)
         if item:
             logging.debug('Respuesta funcion get_item --------------------')
             thetext = item['text']
             logging.debug(item)
             logging.debug(thetext)
             logging.debug('source languaje --------------------')
-            #Obtiene el longuaje del texto (Lenguaje Origen)
+            # Obtiene el longuaje del texto (Lenguaje Origen)
             source_language = get_item_languaje(thetext)
             logging.debug(source_language)
             translateresult = translate_text(
@@ -248,7 +250,7 @@ def translate_item(key, language, dynamodb=None):
             )
 
             logging.debug("Translation output: " + str(translateresult))
-            #Actualizo texto traducido
+            # Actualizo texto traducido
             item['text'] = translateresult
             logging.debug("Item Traslate:")
             logging.debug(item)
@@ -256,8 +258,7 @@ def translate_item(key, language, dynamodb=None):
     except ClientError as e:
         logger.exception("Couldn't translate.")
         print(e.response['Error']['Message'])
-    
     else:
         return item
 
-#------------------ TRASLATE FIN --------------------
+# ------------------ TRASLATE FIN --------------------
