@@ -156,8 +156,9 @@ def create_todo_table(dynamodb):
 # Obtiene el servicio de comprehend
 def get_comprehend(comprehend=None):
     if not comprehend:
+        url_comprehend = 'https://comprehend.us-east-1.amazonaws.com/'
         comprehend = boto3.client(service_name='comprehend',
-                                    endpoint_url='https://comprehend.us-east-1.amazonaws.com/')
+                                  endpoint_url=url_comprehend)
     logger.debug("Obteniendo comprehend")
     logger.debug(comprehend)
     return comprehend
@@ -166,8 +167,9 @@ def get_comprehend(comprehend=None):
 # Obtiene el servicio de traslate
 def get_translate(translate=None):
     if not translate:
+        url_translate = 'https://translate.us-east-1.amazonaws.com/'
         translate = boto3.client(service_name='translate',
-                                    endpoint_url='https://translate.us-east-1.amazonaws.com/')
+                                 endpoint_url=url_translate)
     logger.debug("Obteniendo translate")
     logger.debug(translate)
     return translate
