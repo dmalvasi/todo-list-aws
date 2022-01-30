@@ -26,9 +26,17 @@ class TestDatabaseFunctions(unittest.TestCase):
             message="Using or importing.*")
         """Create the mock database and table"""
         self.dynamodb = boto3.resource('dynamodb', region_name='us-east-1')
+        # Agrego servicio de omprehend y traslate
+        url_comprehend = 'https://comprehend.us-east-1.amazonaws.com/'
+        url_translate = 'https://translate.us-east-1.amazonaws.com/'
+        self.comprehend =  boto3.client(service_name='comprehend', region_name='us-east-1', endpoint_url=url_comprehend)
+        self.translate =  boto3.client(service_name='translate', region_name='us-east-1', endpoint_url=url_translate)
         self.is_local = 'true'
         self.uuid = "123e4567-e89b-12d3-a456-426614174000"
         self.text = "Aprender DevOps y Cloud en la UNIR"
+        self.origin_lang = "es"
+        self.dest_lang = "it"
+        self.traduccion = "Scopri DevOps e Cloud presso UNIR"
 
         from src.todoList import create_todo_table
         self.table = create_todo_table(self.dynamodb)
@@ -225,7 +233,6 @@ class TestDatabaseFunctions(unittest.TestCase):
         self.assertIsNotNone(table)
         del os.environ['ENDPOINT_OVERRIDE']
         print ('End: test_get_table_none')
-
 
 
 if __name__ == '__main__':

@@ -154,7 +154,7 @@ def create_todo_table(dynamodb):
 
 # ------------------ TRASLATE INICIO --------------------
 # Obtiene el servicio de comprehend
-def get_comprehend(comprehend=None):
+def get_comprehend(comprehend=None):  # pragma: no cover
     if not comprehend:
         url_comprehend = 'https://comprehend.us-east-1.amazonaws.com/'
         comprehend = boto3.client(service_name='comprehend',
@@ -165,7 +165,7 @@ def get_comprehend(comprehend=None):
 
 
 # Obtiene el servicio de traslate
-def get_translate(translate=None):
+def get_translate(translate=None):  # pragma: no cover
     if not translate:
         url_translate = 'https://translate.us-east-1.amazonaws.com/'
         translate = boto3.client(service_name='translate',
@@ -176,7 +176,7 @@ def get_translate(translate=None):
 
 
 # Detecta el lenguaje original del texto.
-def get_item_languaje(text, comprehend=None):
+def get_item_languaje(text, comprehend=None):  # pragma: no cover
     comprehend = get_comprehend(comprehend)
     logger.info(comprehend)
     try:
@@ -202,7 +202,7 @@ def get_item_languaje(text, comprehend=None):
 
 
 # Realiza el traslate del texto.
-def translate_text(text, s_lang, t_lang, translate=None):
+def translate_text(text, s_lang, t_lang, translate=None):  # pragma: no cover
     logging.info('get translateclient --------------------')
     translate = get_translate(translate)
     logging.debug('TRASLATE CLIENTE  --------------------')
@@ -231,7 +231,7 @@ def translate_text(text, s_lang, t_lang, translate=None):
 
 
 # pre requisitos: ID y Lenguaje
-def translate_item(key, language, dynamodb=None):
+def translate_item(key, language, dynamodb=None):  # pragma: no cover
     logging.info('inicio translate (translate_item) --------------------')
     try:
         logging.debug('Llamo funcion get_item --------------------')
