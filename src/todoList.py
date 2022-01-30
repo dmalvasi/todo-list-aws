@@ -231,7 +231,7 @@ def translate_item(key, language, dynamodb=None):
     logging.info('inicio translate (translate_item) --------------------')
     try:
         logging.debug('Llamo funcion get_item --------------------')
-        item = get_item(key)
+        item = get_item(key,dynamodb)
         if item:
             logging.debug('Respuesta funcion get_item --------------------')
             thetext = item['text']
