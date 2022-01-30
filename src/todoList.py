@@ -5,13 +5,17 @@ import uuid
 import json
 import functools
 from botocore.exceptions import ClientError
+import logging
+
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
 
 
 def get_table(dynamodb=None):
     if not dynamodb:
         URL = os.environ['ENDPOINT_OVERRIDE']
         if URL:  # pragma: no cover
-            print('URL dynamoDB:'+URL)
+            print('URL dynamoDB:'+URL) 
             boto3.client = functools.partial(boto3.client, endpoint_url=URL)
             boto3.resource = functools.partial(boto3.resource,
                                                endpoint_url=URL)
@@ -146,3 +150,114 @@ def create_todo_table(dynamodb):
         raise AssertionError()  # pragma: no cover
 
     return table
+
+
+#------------------ TRASLATE INICIO --------------------
+#Obtiene el servicio de comprehend
+def get_comprehend(comprehend=None):
+    if not comprehend:
+        comprehend = boto3.client(service_name='comprehend',endpoint_url='https://comprehend.us-east-1.amazonaws.com/')
+    logger.debug("Obteniendo comprehend")
+    logger.debug(comprehend)
+    return comprehend
+
+#Obtiene el servicio de traslate
+def get_translate(translate=None):
+    if not translate:
+        translate = boto3.client(service_name='translate',endpoint_url='https://translate.us-east-1.amazonaws.com/')
+    logger.debug("Obteniendo translate")
+    logger.debug(translate)
+    return translate
+
+
+#Detecta el lenguaje original del texto.
+def get_item_languaje(text, comprehend=None):
+    comprehend = get_comprehend(comprehend)
+    logger.info(comprehend)
+    try:
+        logger.info("Detect text lang: " + str(text))
+        response = comprehend.detect_dominant_language(
+                Text=text
+        )
+    except ClientError as e:
+        logger.exception("Couldn't detect languages.")
+        print(e.response['Error']['Message'])
+    else:
+        languages = response['Languages']
+        logger.info("Detected %s languages.", len(languages))
+
+        # Ordeno la lista de lenguajes por el mejor score
+        order_languaje = sorted(
+                response['Languages'],
+                key=lambda k: k['Score'],
+                reverse=True)
+        # Obtengo el primero de la lista ordenada
+        thelangcode = order_languaje[0]['LanguageCode']
+        return str(thelangcode)
+
+
+#Realiza el traslate del texto.
+def translate_text(text, s_lang, t_lang, translate=None):
+    logging.info('get translateclient --------------------')
+    translate = get_translate(translate)
+    logging.debug('TRASLATE CLIENTE  --------------------')
+    logger.debug(translate)
+
+    try:
+        logger.debug(translate)
+        logger.debug("texto: " + text)
+        logger.debug("Lenguaje entrada: " + str(s_lang))
+        logger.debug("Lenguaje salida: " + str(t_lang))
+
+        response = translate.translate_text(
+                Text=text,
+                SourceLanguageCode=s_lang,
+                TargetLanguageCode=t_lang
+        )
+        
+    except ClientError as e:
+        logger.exception("No fue posible realizar la traduccion")
+        print(e.response['Error']['Message'])
+        print(e)
+
+    else:
+        logger.debug("traduccion.")
+        logger.debug(response)
+        return str(response['TranslatedText'])
+
+
+# pre requisitos: ID y Lenguaje
+def translate_item(key, language, dynamodb=None):
+    logging.info('inicio translate (translate_item) --------------------')
+    try:
+        logging.debug('Llamo funcion get_item --------------------')
+        item = get_item(key)
+        if item:
+            logging.debug('Respuesta funcion get_item --------------------')
+            thetext = item['text']
+            logging.debug(item)
+            logging.debug(thetext)
+            logging.debug('source languaje --------------------')
+            #Obtiene el longuaje del texto (Lenguaje Origen)
+            source_language = get_item_languaje(thetext)
+            logging.debug(source_language)
+            translateresult = translate_text(
+                    thetext,
+                    source_language,
+                    language
+            )
+
+            logging.debug("Translation output: " + str(translateresult))
+            #Actualizo texto traducido
+            item['text'] = translateresult
+            logging.debug("Item Traslate:")
+            logging.debug(item)
+
+    except ClientError as e:
+        logger.exception("Couldn't translate.")
+        print(e.response['Error']['Message'])
+    
+    else:
+        return item
+
+#------------------ TRASLATE FIN --------------------

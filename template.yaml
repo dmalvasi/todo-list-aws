@@ -92,7 +92,20 @@ Resources:
           Properties:
             Path: /todos/{id}
             Method: delete
-            
+  TranslateTodoFunction:
+    Type: AWS::Serverless::Function 
+    Properties:
+      CodeUri: src/
+      Role: !Sub "arn:aws:iam::${AWS::AccountId}:role/LabRole"
+      Handler: translate.translate
+      Runtime: python3.7
+      Events:
+        Create:
+          Type: Api
+          Properties:
+            Path: /todos/{id}/{language}
+            Method: get
+                      
   TodosDynamoDbTable:
     Type: AWS::DynamoDB::Table
     Properties: 
