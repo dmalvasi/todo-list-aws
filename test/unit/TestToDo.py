@@ -234,6 +234,86 @@ class TestDatabaseFunctions(unittest.TestCase):
         del os.environ['ENDPOINT_OVERRIDE']
         print ('End: test_get_table_none')
 
+#  ------------------------------ PRUEBAS TRANSLATE INICIO ------------------------------
+    # Testeo Obtener Lenguaje
+    def test_get_languaje(self):
+        print ('---------------------')
+        print ('Start: test_get_languaje')
+        from src.todoList import get_item_languaje
+        responseLanguaje = get_item_languaje(
+                self.text,
+                self.comprehend)
+        print ('Response Languaje:' + str(responseLanguaje))
+        self.assertEqual(responseLanguaje, self.origin_lang)
+        print ('End: test_get_languaje')
+
+    # Testeo Obtener Lenguaje Error
+    def test_get_language_err(self):
+        print ('---------------------')
+        print ('Start: test_err_get_languaje---------------')
+        from src.todoList import get_item_languaje
+        self.assertRaises(
+            Exception,
+            get_item_languaje("-", self.comprehend))
+        print ('End: test_err_get_languaje---------------')
+
+    # Testeo Traduccion Error
+    def test_translate_text_err(self):
+        print ('---------------------')
+        print ('Start: test_err_translate_text')
+        from src.todoList import translate_text
+        
+        self.assertRaises(Exception,
+            translate_text(self.text,
+                None,
+                "es",
+                self.translate))
+        self.assertRaises(TypeError,
+            translate_text(self.text,
+                "it",
+                "es",
+                self.translate))
+        self.assertRaises(Exception,
+            translate_text(self.text,
+                "it",
+                "es", 
+                self.translate))
+        print ('End: test_err_translate_text')
+
+    # Testeo Traduccion
+    def test_translate_text(self):
+        print ('---------------------')
+        print ('Start: test_translate_text')
+        from src.todoList import translate_text
+        response = translate_text(
+                self.text,
+                self.origin_lang,
+                self.dest_lang,
+                self.translate)
+        print ('Response Translate:' + str(response))
+        self.assertEqual(response, self.traduccion)
+        print ('End: test_translate_text')
+
+    # Testeo funcion traduiccion item
+    def test_translate_item(self):
+        print ('---------------------')
+        print ('Start: test_translate_item')
+        from src.todoList import translate_item
+        from src.todoList import put_item
+        responsePut = put_item(self.text, self.dynamodb)
+        print ('Response PutItem' + str(responsePut))
+        idItem = json.loads(responsePut['body'])['id']
+        responseTranslate = translate_item(
+                idItem,
+                self.dest_lang,
+                self.dynamodb)
+        print ('Response translate:' + str(responseTranslate))
+        self.assertEqual(
+            self.traduccion,
+            responseTranslate['text'])
+        print ('End: test_translate_item')
+
+#  ------------------------------ PRUEBAS TRANSLATE FIN ------------------------------
 
 if __name__ == '__main__':
     unittest.main()
